@@ -1,0 +1,23 @@
+# ⛔ 이 저장소는 «넣을 것만 골라» 만든다. 이 파일은 두 번째 방어선이지 첫 번째가 아니다.
+.secrets
+*.env
+prompt_log.md
+
+# 자료·산출물 — 공표 자료라 누구나 받는다. 여기 두지 않는다.
+data/
+output/
+logs/
+parsed/
+
+# 저작권 있는 원문
+references/
+
+# 내부 작업 메모
+CLAUDE.md
+SESSION_LOG.md
+
+.Rhistory
+.RData
+.Rproj.user/
+__pycache__/
+*.pyc

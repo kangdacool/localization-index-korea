@@ -1,0 +1,33 @@
+﻿key,kind,domain,active,org_id,tbl_id,prd_se,start_prd,end_prd,item_names,axis_spec,label_ko,note
+bed_tier,kosis,volume,1,354,DT_HIRA45_1,Q,201102,,병상수|병실수,입원실현황별=TOTAL|일반입원실|정신과개방|정신과폐쇄|중환자실|격리병실|무균치료실|임종실;요양기관종별=TOTAL|상급종합병원|종합병원|병원|요양병원|정신병원|의원,요양기관 종별 입원실(병상) 현황,기능별 구성(2)의 원천. 중환자실/격리병실이 같은 표에 있다
+hr_doctor,kosis,volume,1,354,DT_HIRA44,Q,200901,,ALL,의료인력별=전체|의사|의사>일반의|의사>인턴|의사>레지던트|의사>전문의;요양기관종별=TOTAL|상급종합병원|종합병원|병원|요양병원|정신병원|의원,요양기관 종별 의사 인력,이름 중복 주의 - 일반의/인턴/레지던트/전문의가 의사·치과의사·한의사 밑에 각각 있어 부모>자식 표기가 필수
+hr_nurse,kosis,volume,1,354,DT_HIRA4A,Q,200901,,ALL,인력현황별=간호사|간호조무사;요양기관종별=TOTAL|상급종합병원|종합병원|병원|요양병원|정신병원|의원,요양기관 종별 간호 인력,간호사는 상위(전문간호사 포함 계)와 하위가 같은 이름이라 상위를 쓴다
+er_bed,kosis,emergency,1,354,DT_HIRA49_2,Q,201302,,병상수|병실수,특수진료실구분별=응급실;요양기관종별=TOTAL|상급종합병원|종합병원|병원|요양병원,응급실 병상·병실 현황,심평원 신고 기준 물리적 응급실 병상
+inst_sido,kosis,distribution,1,354,DT_MIRE01,Q,200901,,ALL,요양기관종별=TOTAL|상급종합병원|종합병원|병원|요양병원|정신병원|의원;시도별=ALL,시도별 종별 요양기관 수,시도x종별 교차가 되는 유일한 표. 병상·인력은 이 교차가 없다
+bed_sido,kosis,distribution,1,354,DT_HIRA45_2,Q,201803,,병상수,시군구별=TOPLEVEL;입원실현황별=TOTAL,시도별 병상 총계,종별 구분 없음. 시군구 표에서 상위(전국·시도) 행만 취한다
+hr_sido,kosis,distribution,1,354,DT_HIRA4T,Q,200901,,ALL,시군구별=TOPLEVEL;의료인력별=의사|의사>전문의,시도별 의사·전문의 수,종별 구분 없음
+er_facility,kosis,emergency,1,411,DT_41104_411,Y,2014,2024,ALL,응급의료기관유형별=ALL;지역별=ALL,응급의료기관 지정 현황,법정 지정 등급(권역·전문·지역센터·지역기관·응급의료시설)
+pop_sido,kosis,denominator,1,101,DT_1YL20651E,Y,2009,2025,계,행정구역별=TOPLEVEL,주민등록인구(전국·시도),밀도 지표의 분모. dataonly/kor_pop과 겹치는 연도에서 일치해야 한다
+bed_icu_detail,kosis,mix,0,354,DT_HIRA45_1,Q,201102,,병상수,입원실현황별=중환자실>성인소아|중환자실>성인|중환자실>소아|중환자실>신생아;요양기관종별=TOTAL|상급종합병원|종합병원,중환자실 세부 구성,활성화 후보. 신생아 중환자실 감소는 별도 서사
+public_bed,kosis,mix,0,411,DT_411002_02,Y,,,ALL,ALL,시도별 공공의료기관 기능별 병상 수,공공/민간 구성비. 활성화 전 getMeta로 축 이름 확인할 것
+public_share,kosis,mix,0,411,DT_411002_03,Y,,,ALL,ALL,시도별 공공의료기관 비중,미검증 - 활성화 전 getMeta 필요
+equip,kosis,volume,0,354,DT_HIRA48_1,Q,201201,,ALL,장비명칭별=전체;요양기관종별=ALL,요양기관 종별 의료장비,장비 251종. CT/MRI만 뽑으려면 장비명칭 확인 필요
+er_specialist,kosis,emergency,0,411,DT_41104_431,Y,2012,2024,ALL,ALL,응급의학 전문의 수(시도별),미검증 - 활성화 전 getMeta 필요
+alos,kosis,utilization,1,117,DT_117030_008,Y,2000,,급성기 진료 평균재원일수|급성기 진료 퇴원건수,가상분류=데이터,"급성기 평균재원일수·퇴원건수 (OECD 제출기준, 한국)",⑤활용. 축이 «가상분류=데이터» 하나뿐인 표(2026-09-01 메타 실측)
+bed_occupancy,kosis,utilization,1,101,DT_2OEHG021,Y,2000,,가동률,국가=대한민국|일본|독일|미국|프랑스|영국,급성기 병상 가동률 (OECD),⑤활용. 축[국가] 슬롯1·항목=가동률 ⚠ 「OECD」(평균 행)는 메타데이터에 «있지만 값이 하나도 오지 않는다»(2026-09-01 실측) — 요청에서 뺐다. 평균이 필요하면 직접 계산하되 «OECD 평균»이라 부르지 말 것. ⛔ **한국은 2000~2003 4개년뿐이다** — 최근 국제 가동률 비교에 한국을 넣을 수 없다.
+oecd_bed,kosis,benchmark,1,101,DT_2OEHG020,Y,2000,,병상 수,국가=대한민국|일본|독일|미국|프랑스|영국,"인구 1,000명당 병상 수 (OECD)",⑥기준. 축[국가] 슬롯1·항목=병상 수(2026-09-01 메타 실측). OECD=평균행 ⚠ 「OECD」(평균 행)는 메타데이터에 «있지만 값이 하나도 오지 않는다»(2026-09-01 실측) — 요청에서 뺐다. 평균이 필요하면 직접 계산하되 «OECD 평균»이라 부르지 말 것. ⚠ 영국은 이 표에 값이 없다.
+oecd_doctor,kosis,benchmark,1,101,DT_2OEHG052,Y,2000,,의사,국가=대한민국|일본|독일|미국|프랑스|영국,"인구 1,000명당 활동 의사 수 (OECD)",⑥기준. ⚠ OECD의 «활동 의사» 정의라 DT_HIRA44(요양기관 근무)와 다른 양이다 ⚠ 「OECD」(평균 행)는 메타데이터에 «있지만 값이 하나도 오지 않는다»(2026-09-01 실측) — 요청에서 뺐다. 평균이 필요하면 직접 계산하되 «OECD 평균»이라 부르지 말 것.
+care_in_res,kosis,access,1,350,TX_35003_A005,Y,2006,2024,진료비|입내원일수,시도별=ALL;입원및외래별=ALL,시도별 진료현황-관내(환자 거주지 기준),자체충족률의 분자. 전국 행이 없다
+care_out_res,kosis,access,1,350,TX_35003_A006,Y,2006,2024,진료비|입내원일수,시도별=ALL;입원및외래별=ALL,시도별 진료현황-관외(환자 거주지 기준),그 지역 주민이 밖에서 받은 진료. 거주지 미상인 기타 행 포함
+care_total_res,kosis,access,1,350,TX_35003_A004,Y,2006,2024,진료비|입내원일수,시도별=ALL;급여형태별=합계,시도별 진료현황-전체(환자 거주지 기준),게이트 전용 - 시도별로 관내+관외와 정확히 같아야 한다
+care_in_inst,kosis,access,1,350,DT_35003_A0071,Y,2011,2024,진료비|입내원일수,시도별=ALL;입원및외래별=ALL,의료기관 시도별 진료현황-관내(기관 소재지 기준),환자유입률의 분모 일부
+care_out_inst,kosis,access,1,350,DT_35003_A0072,Y,2011,2024,진료비|입내원일수,시도별=ALL;입원및외래별=ALL,의료기관 시도별 진료현황-관외(기관 소재지 기준),그 지역 기관이 외지 주민을 진료한 것. 거주지 기준 관외와 전혀 다른 양이다
+hm_indicators,file,access,1,411,<DATA_ONLY>/healthmap/csv/지역별 모니터링 지표.csv,Y,2023,2023,ALL,ALL,헬스맵 지역별 모니터링 지표(시군구·중진료권·시도),관내의료이용률·지역환자구성비·기준시간내의료이용률. 적재는 R/12_healthmap.R
+hm_underserved,file,access,1,411,<DATA_ONLY>/healthmap/csv/의료취약지.csv,Y,2023,2023,ALL,ALL,헬스맵 의료취약지 선정 결과,분만·소아청소년과·인공신장실·응급 4종 판정 + 접근성취약인구비율
+hm_flow,file,access,1,411,<DATA_ONLY>/healthmap/csv/유출입_요양종별.csv,Y,2023,2023,ALL,ALL,헬스맵 유출입 행렬(시군구x시군구),지역1=기관 소재지 / 지역2=환자 거주지. 게이트 교차검증에 쓴다
+hm_institutions,file,access,0,411,<DATA_ONLY>/healthmap/csv/기관정보.csv,Y,2023,2023,ALL,ALL,헬스맵 기관정보 77056건(좌표·지정·보유),미사용. 지정 플래그는 혼합 빈티지라 개소수로 쓰지 말 것
+std_institutions,file,distribution,0,110,<DATA_ONLY>/med_inst_register,Y,,,ALL,ALL,전국의료기관표준데이터(행안부 인허가 대장),개폐업 이력·좌표. ⚠ 병상은 KOSIS와 분류가 달라 대체 불가 — README 참조
+nhis_yearbook,file,utilization,0,350,<DATA_ONLY>/nhis_region_stats,Y,2006,2024,ALL,ALL,지역별 의료이용 통계연보(건강보험공단),"시군구 단위 연 시계열. 파서 = R/_parse_yearbook.py (2026-08-31 검증 통과, KOSIS 대조 303칸 0.00%). 조립·게이트 = R/16_yearbook.R"
+hira_inst_list,file,volume,1,354,data/raw/hira_inst_list_<stamp>.json,Y,,,ALL,ALL,심평원 병원정보서비스 기관 목록(병원급 이상),ykiho·종별·시군구·좌표·의사수. 14_fetch_hira_facility.R 가 받는다
+hira_facility,file,volume,1,354,data/raw/hira_facility_<stamp>.jsonl,Y,,,ALL,ALL,심평원 의료기관별 시설정보(허가병상 등),기관당 1콜 x 3360. KOSIS의 시도x종별x병상 제약을 우회 — 단 스냅숏
+fiscal_indep,kosis,denominator,1,101,DT_1YL20921,Y,2001,,재정자립도(세입과목개편전)|재정자립도(세입과목개편후),행정구역별=ALL,재정자립도 (시도/시/군/구),"지역의 «사회경제 축». 보건자원 지표가 아니라 층화용 맥락변수라 domain=denominator. 축1[행정구역별] 259개(전국+17시도+시군구), 코드가 인구파일과 «같은 체계»다(11010 종로구, 부모=code[:4]+0) — 인구·자체충족률과 같은 규칙으로 붙는다. ⚠ 항목이 «세입과목개편 전/후» 둘로 갈린다 — 연도별로 어느 쪽이 채워지는지 확인할 것. ⚠ 「동구」가 여섯 개다. 반드시 코드로 다룰 것"
