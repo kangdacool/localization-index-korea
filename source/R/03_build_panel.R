@@ -185,6 +185,7 @@ gate_region_sums <- function(panel, tol = 0) {
   TOTAL_LABELS <- c("계", "전체", "전국", "합계")
   checked <- 0L
   skipped_ratio <- character(0)
+  unchecked     <- character(0)   # 게이트가 «아무 말도 못 한» 지표
   for (k in unique(panel$key)) {
     d <- panel[panel$key == k, , drop = FALSE]
 
@@ -192,9 +193,21 @@ gate_region_sums <- function(panel, tol = 0) {
     ## 재정자립도의 시도 합은 8254%, 전국은 58% 다(2026-09-01 실측). 그래서 단위가 %인
     ## 계열은 «건너뛴다». 느슨하게 만드는 것이 아니라 **적용 대상을 바로잡는 것**이다.
     ## ⚠ 건너뛴 것을 조용히 넘기지 않고 세어서 보고한다 — 안 그러면 「검사됐다」고 오해한다.
-    if (any(d$unit %in% c("%", "％"), na.rm = TRUE)) {
-      skipped_ratio <- c(skipped_ratio, k)
-      next
+    ## ⛔ 2026-09-03: 예전엔 «계열 통째로» 건너뛰었다. 그런데 한 계열이 「건수」와 「생존율」을
+    ##    둘 다 갖는 경우가 있고(OHCA), 그러면 검사 가능한 건수까지 빠졌다.
+    ##    → 비율 «항목»만 빼고 나머지로 검사한다. 무엇을 뺐는지도 계속 보고한다.
+    ## ⛔ 「더할 수 있는 양」인가로 가른다 - 이름이 아니라 «단위»로.
+    ##    2026-09-03: 연령표준화 사망률(`십만명당`)이 이 목록에 없어 게이트가
+    ##    0칸을 검사하고 OK 라고 말했다. 17시도 합 4,967 vs 전국 300(≈17배).
+    ## ⛔ 「인구당·평균」만 뺀다. 입내원일수(단위 일)는 «세는 양»이라 더해진다 -
+    ##    단위만 보고 그것까지 빼면 오래 통과하던 검사 다섯이 조용히 사라진다(실측).
+    is_ratio <- d$unit %in% c("%", "％", "십만명당", "10만명당", "만명당", "천명당") |
+                grepl("^평균", d$itm_nm)
+    if (any(is_ratio, na.rm = TRUE)) {
+      skipped_ratio <- c(skipped_ratio,
+                         sprintf("%s[%s]", k, paste(unique(d$itm_nm[is_ratio]), collapse = "/")))
+      d <- d[!is_ratio, , drop = FALSE]
+      if (!nrow(d)) next
     }
 
     region_col <- NULL
@@ -264,13 +277,24 @@ gate_region_sums <- function(panel, tol = 0) {
       stop(sprintf("gate_region_sums FAILED for %s: %d of %d cells differ. worst %s / %s: parts=%.0f national=%.0f",
                    k, nrow(bad), nrow(cmp), worst$prd_de, worst$.by, worst$value, worst$total))
     }
-    cat(sprintf("--- gate region-sum  %-12s OK (%s, %d cells%s)\n", k, region_col, nrow(cmp),
-                if (n_skip > 0) sprintf(", %d skipped: 부분값 미공개", n_skip) else ""))
-    checked <- checked + 1L
+    ## ⭐ 「맞는가」와 「검사했는가」는 다른 질문이다. 0칸을 OK 라 부르면 그 지표는
+    ##    검사된 적이 없는데 검사된 것처럼 보인다(2026-09-03 mort_sgg 실측).
+    if (nrow(cmp) == 0L) {
+      cat(sprintf("--- gate region-sum  %-12s ⚠ 미검사 (대조 가능한 칸 0, %d칸 부분값 미공개)\n",
+                  k, n_skip))
+      unchecked <- c(unchecked, k)
+    } else {
+      cat(sprintf("--- gate region-sum  %-12s OK (%s, %d cells%s)\n", k, region_col, nrow(cmp),
+                  if (n_skip > 0) sprintf(", %d skipped: 부분값 미공개", n_skip) else ""))
+      checked <- checked + 1L
+    }
   }
   if (length(skipped_ratio))
-    cat(sprintf("--- gate region-sum  건너뜀(비율이라 합산 불가): %s\n",
+    cat(sprintf("--- gate region-sum  비율 항목 제외(합산 불가): %s\n",
                 paste(unique(skipped_ratio), collapse = ", ")))
+  if (length(unchecked))
+    cat(sprintf("--- gate region-sum  ⚠ 이 지표들은 «검사되지 않았다»: %s\n",
+                paste(unchecked, collapse = ", ")))
   if (checked == 0L) stop("gate_region_sums: no table carried a detectable region axis")
 }
 

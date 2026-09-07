@@ -328,6 +328,53 @@ write_brief <- function(panel) {
     add("")
   }
 
+  ## ---- domain 7: 결과 ---------------------------------------------------
+  ## ⑦이 생기기 전까지 이 브리핑은 «전부 공급과 이용»이었다 - 「그래서 작동하는가」를
+  ## 말하는 절이 여기다. ⛔ 자원과 결과를 나란히 놓되 인과로 쓰지 않는다.
+  mo <- panel[panel$key == "mort_sgg", ]
+  if (nrow(mo)) {
+    mo$lv <- ifelse(nchar(mo$axis2_cd) == 2, "상위", "시군구")
+    nat <- mo[mo$lv == "상위" & mo$axis2_val == "전국" & !is.na(mo$value), ]
+    y0 <- min(nat$year); y1 <- max(nat$year)
+    pick <- function(cz, y) nat$value[nat$axis1_val == cz & nat$year == y][1]
+    czs <- unique(nat$axis1_val)
+    tot0 <- pick("계", y0); tot1 <- pick("계", y1)
+
+    ## 늘어난 사인을 «찾아서» 쓴다 - 「자살만 늘었다」를 손으로 적지 않는다
+    ups <- c()
+    for (cz in czs[czs != "계"]) {
+      a <- pick(cz, y0); b <- pick(cz, y1)
+      if (!is.na(a) && !is.na(b) && b > a) {
+        ups <- c(ups, sprintf("%s %+.0f%%", sub(" \\(.*$", "", cz), 100 * (b / a - 1)))
+      }
+    }
+
+    sg <- mo[mo$lv == "시군구" & mo$axis1_val == "계" & !is.na(mo$value), ]
+    r <- function(y) {
+      v <- sg$value[sg$year == y]
+      unname(quantile(v, .9) / quantile(v, .1))
+    }
+
+    add("## 9. 결과 - 그래서 작동하는가 (fig20~fig23)")
+    add("")
+    add("- 전국 **연령표준화 사망률**은 ", y0, "년 ", .fmt(tot0, 1), "에서 ",
+        y1, "년 ", .fmt(tot1, 1), "(십만명당)로 **",
+        .fmt(abs(100 * (tot1 / tot0 - 1)), 0), "% 줄었다**.")
+    if (length(ups)) {
+      add("- 그런데 **늘어난 사인이 있다: ", paste(ups, collapse = " · "), "**. ",
+          "연령표준화 값이므로 인구 고령화의 효과는 이미 빠져 있다.")
+    }
+    add("- **수준은 내려갔지만 지역 격차는 좁아지지 않았다.** 시군구 ",
+        length(unique(sg$axis2_val)), "곳의 P90/P10 이 ", y0, "년 ", .fmt(r(y0), 2),
+        "에서 ", y1, "년 ", .fmt(r(y1), 2), "로 **오히려 조금 벌어졌다** - ",
+        "전국 평균의 개선이 지역 간 균등화를 뜻하지 않는다.")
+    add("- ⚠ 이 절은 자원과 결과를 나란히 보여줄 뿐이다. ",
+        "**「자원이 결과를 만든다」는 이 자료로 말할 수 없다** - 그것은 다른 설계다.")
+    add("- ⚠ 급성심장정지 지표(fig20·fig21)는 KOSIS 가 2020년부터라 코로나 이후만 보인다. ",
+        "조사는 2008년에 시작했고 그 앞 구간은 원시자료 신청이 필요하다.")
+    add("")
+  }
+
   add("---")
   add("")
   add("자료: KOSIS OpenAPI. 수집 대상 표는 `R/indicator_registry.csv`에 있고, ",

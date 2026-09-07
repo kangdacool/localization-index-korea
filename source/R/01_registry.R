@@ -104,10 +104,27 @@ kosis_meta <- function(org_id, tbl_id, type = "ITM") {
 #####  3. NAME -> CODE RESOLUTION                            #####
 ##################################################################
 
-## spec value forms:  "ALL"  "TOPLEVEL"  "이름"  "부모>자식"
+## spec value forms:  "ALL"  "TOPLEVEL"  "NOT:a|b|c"  "이름"  "부모>자식"
 resolve_values <- function(meta_axis, values, axis_nm, tbl_id) {
   if (identical(values, "ALL"))      return(meta_axis$ITM_ID)
   if (identical(values, "TOPLEVEL")) return(meta_axis$ITM_ID[meta_axis$UP_ITM_ID == ""])
+
+  ## ⭐ NOT: = 「거의 전부인데 몇 개만 빼고」 (2026-09-03, mort_sgg).
+  ##    ALL 이 맞는데 축에 «값이 없는» 항목이 섞여 있을 때 쓴다 - DT_1B34E13 의
+  ##    시군구 축 385개에는 «폐지된» 행정구역 10곳(일산구·북제주군 …)이 남아 있고
+  ##    값이 하나도 안 온다. 그것을 죽은범주 게이트가 잡아 파이프라인을 멈춘다.
+  ## ⛔ 빼는 이름이 «실재하는지» 확인한다. 오타를 조용히 넘기면 ALL 과 같아져
+  ##    게이트가 다시 멈추는데, 그때 원인이 레지스트리 오타라는 것이 안 보인다.
+  ## ⚠ spec 파서가 이미 | 로 쪼개 넘긴다 - 「NOT:」는 «첫 원소»에만 붙어 온다.
+  if (grepl("^NOT:", values[1])) {
+    drop <- trimws(c(sub("^NOT:", "", values[1]), values[-1]))
+    miss <- setdiff(drop, meta_axis$ITM_NM)
+    if (length(miss)) {
+      stop(tbl_id, " / ", axis_nm, ": NOT: 로 뺀 이름이 축에 없다 - ",
+           paste(miss, collapse = ", "))
+    }
+    return(meta_axis$ITM_ID[!(meta_axis$ITM_NM %in% drop)])
+  }
 
   out <- character(0)
   for (v in values) {

@@ -120,12 +120,14 @@ trajectory <- function(d) {
       subtitle = sprintf("Median and interquartile range by administrative type; %d districts (balanced panel), expenditure basis",
                          length(unique(d$sgg))),
       x = NULL, y = "Localization index (%)", colour = NULL, fill = NULL, linetype = NULL,
+      ## ⚠ 이 한 줄은 «제약 2»다 — 없으면 독자가 유형 «수준»을 비교한다. 뒤에 있던
+      ##    「비교는 기울기이지 수준이 아니다」는 같은 말의 반복이라 뺐다.
       caption = paste0("Levels are not compared across types: urban districts are embedded ",
                        "in metropolitan areas, where crossing a boundary is trivial, and are ",
-                       "structurally low. The comparison is of slopes, not of levels.")) +
+                       "structurally low.")) +
     theme_hrm()
   ## ⚠ 그림 번호는 «본문 첫 언급 순서»다 — 스크립트 번호가 아니다(2026-09-02 리드 변경).
-  save_fig_journal(p1, "p_fig1_유형별_궤적", height = FIG_W * 5.4 / 9)
+  save_fig_journal(p1, "p_fig1_trajectory_by_type", height = FIG_W * 5.4 / 9)
 
   p2 <- ggplot2::ggplot(gap, ggplot2::aes(연도, 격차)) +
     ggplot2::geom_line(linewidth = 1.2, colour = ACCENT) +
@@ -136,9 +138,9 @@ trajectory <- function(d) {
                   subtitle = "Difference in the median localization index, gu minus gun",
                   x = NULL, y = "Gap (percentage points)",
                   caption = paste0("The vertical distance between the gu and gun medians ",
-                                   "in Fig. 1, reduced to a single series.")) +
+                                   "in Figure 1, reduced to a single series.")) +
     theme_hrm()
-  save_fig_journal(p2, "p_fig2_구군_격차", height = FIG_W * 4.4 / 8)
+  save_fig_journal(p2, "p_fig2_gu_gun_gap", height = FIG_W * 4.4 / 8)
 
   save_step(list(traj = tr, gap = gap, seg = seg), name = "trajectory")
   invisible(tr)

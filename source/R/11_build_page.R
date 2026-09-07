@@ -328,7 +328,17 @@ build_tiles <- function(V) {
 }
 
 ORG_NAME <- c("354" = "심평원", "350" = "건강보험공단", "411" = "국립중앙의료원",
-              "101" = "행정안전부", "117" = "보건복지부")
+              "101" = "행정안전부", "117" = "보건복지부", "177" = "질병관리청")
+
+## ⛔ 2026-09-03: 예전엔 `ORG_NAME[[id]] %||% id` 였는데 **그 뒷부분은 실행될 수 없었다** —
+##    `[[` 는 없는 이름에 NULL 이 아니라 «에러»를 낸다. org 177 을 처음 넣자 페이지 빌드가
+##    죽었고, 그때까지 3주간 숨어 있었다(32개 행 안에서는 그 조건이 안 왔다).
+##    ⭐ 「행 하나면 된다」가 «처음» 깨진 자리다 — 사전에 이름을 더하는 것만으로는 부족하고,
+##    모르는 코드가 와도 «코드 그대로 찍고 지나가게» 해야 그 주장이 계속 참이다.
+org_name <- function(id) {
+  v <- unname(ORG_NAME[as.character(id)])
+  ifelse(is.na(v), as.character(id), v)
+}
 
 build_sources <- function(panel) {
   reg <- load_registry()
@@ -340,7 +350,7 @@ build_sources <- function(panel) {
       rows <- c(rows, paste0(
         "<tr><td>", esc(r$label_ko), "</td>",
         "<td><code>", esc(basename(r$tbl_id)), "</code></td>",
-        "<td>", ORG_NAME[[r$org_id]] %||% r$org_id, "</td>",
+        "<td>", org_name(r$org_id), "</td>",
         "<td>파일</td>",
         "<td class='num'>", r$start_prd, "년 단면</td></tr>"))
       next
@@ -350,7 +360,7 @@ build_sources <- function(panel) {
     rows <- c(rows, paste0(
       "<tr><td>", esc(r$label_ko), "</td>",
       "<td><code>", r$tbl_id, "</code></td>",
-      "<td>", ORG_NAME[[r$org_id]] %||% r$org_id, "</td>",
+      "<td>", org_name(r$org_id), "</td>",
       "<td>", if (r$prd_se == "Q") "분기" else "연", "</td>",
       "<td class='num'>", fq(min(d$prd_de)), " – ", fq(max(d$prd_de)), "</td></tr>"))
   }
@@ -367,6 +377,8 @@ build_page <- function(panel) {
   V    <- page_values(panel, S)
   html <- paste(readLines(file.path(r_dir, "page_template.html"),
                           warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+  ## 치환 «전» 원본을 남긴다 - 아래 고아 그림 검사가 토큰 목록을 필요로 한다
+  template_html <- html
 
   html <- gsub("{{STAMP}}", stamp, html, fixed = TRUE)
   html <- gsub("{{TILES}}", build_tiles(V), html, fixed = TRUE)
@@ -390,6 +402,32 @@ build_page <- function(panel) {
   left <- regmatches(html, gregexpr("\\{\\{[^}]+\\}\\}", html))[[1]]
   if (length(left) > 0) {
     stop("unsubstituted token(s): ", paste(unique(left), collapse = ", "))
+  }
+
+  ## ⛔ 위 검사는 «한쪽 방향»만 본다: 「토큰인데 그림이 없다」는 잡지만
+  ##    「그림인데 토큰이 없다」는 조용히 넘어간다. 실측(2026-09-04):
+  ##    ⑦결과의 fig18_심장정지_전국추세 가 9월 3일부터 만들어지기만 하고
+  ##    **페이지에 한 번도 실리지 않았다** — 아무도 몰랐다.
+  ##    제약 17(「맞는가」와 「검사했는가」는 다른 질문)의 그림 판이다.
+  ## ⚠ `sub()` 는 «첫 매치만» 바꾼다 - 앞의 `{{FIG:` 만 지우고 뒤의 `}}` 가 남아
+  ##    25장 전부를 고아로 오인했다(2026-09-04). `gsub()` 이어야 한다.
+  used <- gsub("^\\{\\{FIG:|\\}\\}$", "", regmatches(
+    template_html, gregexpr("\\{\\{FIG:[^}]+\\}\\}", template_html))[[1]])
+  made <- sub(paste0("_", stamp, "\\.png$"), "", basename(figs))
+  orphan <- setdiff(made, used)
+  if (length(orphan)) {
+    cat(sprintf("--- ⚠ 만들었지만 «페이지에 실리지 않은» 그림 %d장: %s\n",
+                length(orphan), paste(orphan, collapse = ", ")))
+    cat("      page_template.html 에 {{FIG:이름}} 을 넣거나, 안 쓸 그림이면 뷰에서 지울 것\n")
+  }
+
+  ## ⛔ 캡션 번호는 «절을 중간에 끼워 넣는» 순간 겹친다 - 실제로 ⑦결과 절을 넣다가
+  ##    「그림 20·21」이 두 번씩 나왔다(2024-09-04). 읽는 사람은 본문의 「그림 21 참조」가
+  ##    어느 것인지 알 수 없다. 순서가 어긋나는 것도 같이 잡는다.
+  caps <- as.integer(gsub("\\D", "", regmatches(
+    template_html, gregexpr("<b>그림 [0-9]+\\.</b>", template_html))[[1]]))
+  if (length(caps) && (anyDuplicated(caps) || !identical(caps, seq_along(caps)))) {
+    stop("그림 캡션 번호가 중복이거나 순서가 아니다: ", paste(caps, collapse = " "))
   }
 
   out <- file.path(output_dir, paste0("보건자원감시_", stamp, ".html"))

@@ -71,13 +71,15 @@ decompose <- function(d) {
       x = "In-area expenditure, growth multiple (log scale)",
       y = "Out-of-area expenditure, growth multiple (log scale)",
       colour = NULL, shape = NULL,
+      ## ⚠ 인과 금지(제약 8)는 남기되 「모형이 아니다」라는 대비는 뺀다 — 항등식이라고
+      ##    말하면 모형이 아니라는 것은 따라온다.
       caption = paste0(nrow(a1), " districts (balanced panel); expenditure basis, nominal. ",
-                       "This is an arithmetic decomposition of an identity, not a model, ",
-                       "and carries no causal interpretation.")) +
+                       "The decomposition is an arithmetic identity and carries no causal ",
+                       "interpretation.")) +
     theme_hrm()
   ## ⚠ 그림 번호 = 본문 첫 언급 순서(2026-09-02). 궤적이 Fig. 1, 이 산점도가 Fig. 2.
   ## ⚠ 축 제목이 길어 캔버스 상단에 닿아 «잘렸다»(2026-09-02 렌더 확인). 높이를 늘린다.
-  save_fig_journal(g, "p_fig3_관내관외_성장", height = FIG_W * 0.80)
+  save_fig_journal(g, "p_fig3_in_vs_out_growth", height = FIG_W * 0.80)
 
   save_step(list(last = a1, summary = sm, cross = tb), name = "decomp")
   invisible(a1)

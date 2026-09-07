@@ -149,6 +149,32 @@ run_acceptance <- function(panel) {
     expect("시군구 행 수",  length(unique(hi$code[hi$level == "시군구"])), 250)
   }
 
+  cat("\n--- T10 시군구 연령표준화 사망률 (mort_sgg)\n")
+  ## ⭐ 이 계열은 «비율»이라 region-sum 게이트가 손대지 못한다(17시도 합 4,967 vs
+  ##    전국 300). 자동 게이트가 할 말이 없는 지표일수록 사람이 값을 박아 둔다.
+  ## ⛔ 지키는 것은 숫자만이 아니다 - 축 셋짜리 첫 표의 조립과, `NOT:` 문법이
+  ##    «폐지된 행정구역 10곳만» 뺐는지(더 빼거나 덜 빼면 250이 아니다)까지다.
+  mo <- panel[panel$key == "mort_sgg", ]
+  nat <- function(cz, yr) {
+    v <- mo$value[mo$axis2_val == "전국" & mo$axis1_val == cz & mo$year == yr]
+    if (length(v) == 1L) v else NA_real_
+  }
+  expect("전국 전체사인 2006 (십만명당)", nat("계", 2006), 480.3)
+  expect("전국 전체사인 2024",            nat("계", 2024), 294.6)
+  expect("전국 암 2024 (위약 사인)",      nat("악성신생물(암) (C00-C97)", 2024), 79.7)
+  expect("전국 뇌혈관 2006",              nat("뇌혈관 질환 (I60-I69)", 2006), 59.0)
+  expect("사인 6종",                      length(unique(mo$axis1_val)), 6L)
+  expect("단위 종류 1가지(비율 계열)",   length(unique(mo$unit)), 1L)
+  ## ⛔ 시도/시군구는 «이름 목록»으로 가르지 않는다 - 이 표는 제주를 `제주도`라
+  ##    쓰는데(제주특별자치도가 아니다) 목록으로 가르다 한 번 어긋났다.
+  ##    패널이 싣고 있는 `axis2_cd` 로 가른다: 시도 2자리 · 시군구 5자리 (제약 14).
+  ## ⚠ 그리고 개수는 «코드»로 센다 - 「동구」는 다섯 시도에 있어 이름은 식별자가 아니다.
+  cd <- unique(mo[, c("axis2_val", "axis2_cd")])
+  expect("2자리 코드 = 전국 + 17시도", sum(nchar(cd$axis2_cd) == 2), 18L)
+  expect("5자리 코드 = 시군구 (NOT: 로 폐지구역 10곳 제외 후)",
+         sum(nchar(cd$axis2_cd) == 5), 357L)
+  expect("이름은 코드보다 적다 (동구 등 중복)", length(unique(mo$axis2_val)), 265L)
+
   cat("\n--- T8  브리핑과 HTML이 같은 숫자를 말하는가\n")
   ## The two deliverables compute independently, and on 2026-08-31 they had
   ## already drifted - the brief carried no 헬스맵 section at all while the page
@@ -163,6 +189,20 @@ run_acceptance <- function(panel) {
   ## ⚠ "32.4" 는 세종의 자체충족률이었다. 2026-09-01에 「최저·최고」 문장에서 세종을
   ## 빼면서 헤드라인이 충남 55.3% 로 바뀌었다 — 게이트가 그걸 «잡았다»(브리핑에서는
   ## 사라졌는데 페이지에는 남아 있었다). 여기 숫자는 산출물이 바뀌면 같이 바뀐다.
+  ## ⛔ 2026-09-04: ⑦결과가 «페이지에는 있고 브리핑에는 없는» 상태로 하루를 보냈다.
+  ##    T8 은 못박은 숫자 목록만 보므로 **절이 통째로 빠진 것은 못 잡는다.**
+  ##    → 아래 「영역 표제」 검사를 따로 둔다. 숫자보다 거친 검사지만 그 구멍을 막는다.
+  for (dom in c("결과")) {
+    okb <- grepl(dom, bf, fixed = TRUE); okp <- grepl(dom, pg, fixed = TRUE)
+    cat(sprintf("%s %-52s %s\n", if (okb && okp) "  ok  " else " FAIL ",
+                paste0("⑦ 영역 「", dom, "」이 브리핑과 페이지 양쪽에"),
+                if (okb && okp) "있음" else paste0("브리핑 ", okb, " / 페이지 ", okp)))
+    if (!(okb && okp)) {
+      .fails$n <- .fails$n + 1L
+      .fails$msgs <- c(.fails$msgs, paste0("T8 영역 ", dom))
+    }
+  }
+
   shared <- c("13.82", "114,825", "1,833", "609", "55.3", "211", "102",
               "40.6", "42.3")   # 통계연보 시군구 자체충족률 중앙값 2006 -> 2024
   for (v in shared) {

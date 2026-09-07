@@ -83,14 +83,14 @@ inequality <- function(d) {
       subtitle = sprintf("Theil index of the district localization index and its additive decomposition; %d districts",
                          length(unique(d$sgg))),
       x = NULL, y = "Theil index", fill = NULL,
+      ## ⚠ 마지막 문장은 «제약 9»다 — 총량의 부호가 가중에 따라 뒤집히므로 그림 옆에
+      ##    반드시 붙는다. ⛔ 「집중지수가 아니다」류 변론은 뺐다(Methods 가 이미 말한다).
       caption = paste0("The Theil index decomposes additively into between-group and ",
-                       "within-group components. This is inequality in the distribution of ",
-                       "the localization index across districts; it is not a concentration index ",
-                       "or slope index, which require an ordered social ranking. ",
-                       "Districts are weighted equally here; population-weighted results, ",
-                       "which move in the opposite direction, are reported separately.")) +
+                       "within-group components. Districts are weighted equally here; ",
+                       "population-weighted results, which move in the opposite direction, ",
+                       "are reported separately.")) +
     theme_hrm()
-  save_fig_journal(g, "p_fig4_불평등_분해", height = FIG_W * 5 / 9)
+  save_fig_journal(g, "p_fig4_inequality_decomposition", height = FIG_W * 5 / 9)
 
   save_step(list(ineq = per_year), name = "inequality")
   invisible(per_year)

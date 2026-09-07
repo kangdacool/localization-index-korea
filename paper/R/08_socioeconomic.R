@@ -181,18 +181,19 @@ socioeconomic <- function(d) {
                                 expand = ggplot2::expansion(mult = c(0.02, 0.05))) +
     ggplot2::scale_y_continuous(labels = function(x) paste0(x, "%")) +
     ggplot2::labs(title = "Localization index by quintile of local fiscal independence",
-                  subtitle = sprintf("Quintiles fixed at %d; Q1 = weakest fiscal capacity; %d-%d districts",
+                  subtitle = sprintf("Quintiles fixed at %d; Q1 = weakest fiscal capacity; %d–%d districts",
                                      min(yrs), min(both$n), max(both$n)),
                   x = NULL, y = "Localization index (%)", colour = NULL, linetype = NULL,
+                  ## ⚠ 「매년 재계산하면 궤적이 아니다」는 Methods 의 선택 근거다 — 범례에서
+                  ##    뺐다. 비단조는 남긴다(없으면 독자가 등급 순서를 읽는다).
                   caption = paste0("The fiscal independence ratio is a local-government ",
                                    "statistic, so administrative districts nested within a ",
                                    "city take their parent city's value. Quintiles are fixed ",
-                                   "at the baseline year: recomputing them annually changes ",
-                                   "group membership, so the lines would not be trajectories. ",
-                                   "The ordering is not monotonic across quintiles - Q4 lies ",
-                                   "above Q5 throughout. No causal reading is intended.")) +
+                                   "at the baseline year. The ordering across quintiles is not ",
+                                   "monotonic: Q4 lies above Q5 throughout. No causal reading ",
+                                   "is intended.")) +
     theme_hrm()
-  save_fig_journal(gg, "p_fig5_재정5분위_궤적", height = FIG_W * 5 / 9)
+  save_fig_journal(gg, "p_fig5_fiscal_quintile_trajectory", height = FIG_W * 5 / 9)
 
   save_step(list(both = both, traj = tr, fiscal = fis), name = "socioeconomic")
   invisible(both)

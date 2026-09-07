@@ -185,9 +185,13 @@ manuscript_check <- function() {
   ## ⛔ 2026-09-02: 예전엔 «문자열 종류»를 셌다 — "[Figure 5]" 와 ", Figure 5]" 가 서로 다른
   ##    참조로 잡혀 같은 그림이 둘로 세어졌다. 세어야 하는 것은 «번호»다.
   .nums <- function(pat) sort(unique(as.integer(gsub("\\D", "",
-             regmatches(txt, gregexpr(pat, txt))[[1]]))))
-  nums_t <- .nums("\\[Table [0-9]+")
-  nums_f <- .nums("Figure [0-9]+")
+             regmatches(txt, gregexpr(pat, txt, perl = TRUE))[[1]]))))
+  ## ⛔ 2026-09-07: `\\[Table` 로 박혀 있었다. 콜아웃을 «소괄호»로 바꾸자(밴쿠버 번호 인용과
+  ##    대괄호 이름공간이 겹치므로 필수였다) 참조 수가 조용히 0 이 됐다 — FAIL 은 «참조 >
+  ##    산출물»일 때만 나므로 게이트가 통과했다. 검사기의 표기 가정을 원고보다 먼저 의심할 것.
+  ##    S 붙은 보충 번호(Table S3)는 여기서 세지 않는다 — 본문 표시물만 본다.
+  nums_t <- .nums("[\\[(]Table [0-9]+")
+  nums_f <- .nums("Figure [0-9]+(?![0-9])")
   ref_t <- length(nums_t); ref_f <- length(nums_f)
   cat(sprintf("--- 산출물 표 %d · 그림 %d  |  원고 참조 Table %d · Figure %d\n",
               n_tab, n_fig, ref_t, ref_f))
